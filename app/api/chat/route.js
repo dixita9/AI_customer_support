@@ -1,18 +1,27 @@
-import OpenAI from "openai";
 import {NextResponse} from 'next/server'
 
+var message_history = []
 export async function POST(req){
-    // const openai = new OpenAI();
-    // const completion = await openai.chat.completions.create({
-    //     messages: [{"role": "system", "content": "You are a helpful assistant."},
-    //         {"role": "user", "content": "Who won the world series in 2020?"},
-    //         {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
-    //         {"role": "user", "content": "Where was it played?"}],
-    //     model: "gpt-4o-mini",
-    //   });
+
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
+    const message = (await req.json()).message
     
-    //   console.log(completion.choices[0]);
-      return NextResponse.json({message:'Hello from the server'})
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "model": "meta-llama/llama-3.1-8b-instruct:free",
+          "messages": [
+            {"role": "user", "content": `${message}`},
+          ],
+        })
+      });
+      const output = (await response.json()).choices[0].message
+      console.log(output)
+      return NextResponse.json({message: output})
     
 }
 
