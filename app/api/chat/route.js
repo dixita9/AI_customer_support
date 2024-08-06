@@ -22,30 +22,31 @@ There are three possible roles:
 
 export async function POST(req){
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
-    const message = (await req.json()).message
+    const conversationList = await req.json()
     
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json"
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          "model": "meta-llama/llama-3.1-8b-instruct:free",
-          "messages": [
-            {"role": "system", "content": systemPrompt},
-            {"role": "user", "content": `${message}`},
-          ],
+          'model': 'meta-llama/llama-3.1-8b-instruct:free',
+          'messages': [
+            {'role': 'system', 'content': systemPrompt}, ...conversationList],
         })
       });
 
       const responseJSON = await response.json()
       const choices = responseJSON.choices
       if (choices === undefined) {
-        throw new Error("We probably hit our rate limit for today ＞﹏＜ \nchoices is undefined")
+        throw new Error('We probably hit our rate limit for today ＞﹏＜ \nchoices is undefined')
       }
-      const output = choices[0].message
+      const output = choices[0].message.content
 
-      return NextResponse.json({message: output})
+      return NextResponse.json(
+        {'message': output},
+        {status: '200'}
+      )
     
 }
