@@ -37,16 +37,16 @@ export async function POST(req){
         })
       });
 
-      const responseJSON = await response.json()
-      const choices = responseJSON.choices
-      if (choices === undefined) {
+    const responseJSON = await response.json()
+    const choices = responseJSON.choices
+    if (choices === undefined) {
         throw new Error('We probably hit our rate limit for today ＞﹏＜ \nchoices is undefined')
-      }
-      const output = choices[0].message.content
+    }
+    const output = choices[0].message.content
 
-      return NextResponse.json(
+    return NextResponse.json(
         {'message': output},
         {status: '200'}
-      )
+    )
     
 }
