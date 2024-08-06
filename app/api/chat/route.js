@@ -1,8 +1,26 @@
 import {NextResponse} from 'next/server'
+import systemPrompt from './systemPrompt';
 
-var message_history = []
+/*
+messages := list of messages
+message := a dictionary with two keys, 'role' (who said it) and 'content' (what they said)
+[
+    {'role': 'user', 'content': 'How are you?'},
+    {'role': 'assistant', 'content': 'I am well, how are you?'}
+]
+There are three possible roles:
+1. 'user'
+2. 'assistant'
+3. 'system'
+*/
+
+
+//TODO: implement message history
+//var message_history = []
+
+
+
 export async function POST(req){
-
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
     const message = (await req.json()).message
     
@@ -15,20 +33,19 @@ export async function POST(req){
         body: JSON.stringify({
           "model": "meta-llama/llama-3.1-8b-instruct:free",
           "messages": [
+            {"role": "system", "content": systemPrompt},
             {"role": "user", "content": `${message}`},
           ],
         })
       });
-      const output = (await response.json()).choices[0].message
-      console.log(output)
+
+      const responseJSON = await response.json()
+      const choices = responseJSON.choices
+      if (choices === undefined) {
+        throw new Error("We probably hit our rate limit for today ＞﹏＜ \nchoices is undefined")
+      }
+      const output = choices[0].message
+
       return NextResponse.json({message: output})
     
 }
-
-
-
-
-async function main() {
- 
-}
-main();
