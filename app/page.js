@@ -1,6 +1,6 @@
 "use client"
 import { Button, Box, Stack, TextField} from "@mui/material";
-import {useState} from "react"
+import {useState, useEffect, useRef} from "react"
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -8,8 +8,12 @@ export default function Home() {
   ])
 
   const [message, setMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   async function sendMessage() {
+    if (!message.trim() || isLoading) return;  // Don't send empty messages
+    setIsLoading(true)
+
     setMessage('')
     setMessages(
       [
@@ -18,25 +22,63 @@ export default function Home() {
         {'role': 'assistant', 'content': ''} // Placeholder
       ]
     )
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([...messages, { role: 'user', content: message }]),
+      })
 
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify([...messages, { role: 'user', content: message }]),
-    })
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
     
-    chatbotResponse = await response.json()
-    setMessages(
-      [
+      const responseJSON = await response.json()
+      console.log(responseJSON)
+      const output = responseJSON.message
+
+      setMessages(
+        [
+          ...messages,
+          {'role': 'user', 'content': message},
+          {'role': 'assistant', 'content': output} 
+        ]
+      )
+
+     
+    } catch (error){
+      console.error('Error:', error)
+      setMessages([
         ...messages,
         {'role': 'user', 'content': message},
-        {'role': 'assistant', 'content': chatbotResponse}
-      ]
-  )
-
+        { role: 'assistant', content: "I'm sorry, but I encountered an error. Please try again later." },
+      ])
+      
+    } finally {
+      setIsLoading(false)
+    }
+    
   }
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      sendMessage()
+    }
+  }
+
+  const messagesEndRef = useRef(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
   
   return (
     <Box width = "100vh"
@@ -61,6 +103,7 @@ export default function Home() {
           flexGrow={1}
           overflow="auto"
           maxHeight="100%"
+          justifyContent="flex-end"
         >
           {messages.map((message, index) => (
             <Box
@@ -84,6 +127,7 @@ export default function Home() {
               </Box>
             </Box>
           ))}
+          <div ref={messagesEndRef} />
         </Stack>
         <Stack direction = {"row"} spacing = {2}>
           <TextField 
@@ -91,8 +135,10 @@ export default function Home() {
             value = {message}
             fullWidth
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyPress}
+            disabled={isLoading}
           />
-          <Button variant = "contained" onClick={sendMessage}>Send</Button>
+          <Button variant = "contained" onClick={sendMessage} disabled={isLoading}>{isLoading ? 'Sending...' : 'Send'}</Button>
         </Stack>
       </Stack>
     </Box>
