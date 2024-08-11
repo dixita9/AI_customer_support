@@ -10,7 +10,7 @@ Run the ChromaDB docker container:
 docker pull chromadb/chroma
 docker run -e ALLOW_RESET=TRUE -p 8000:8000 chromadb/chroma
 ```
-The environment variable ALLOW_RESET=TRUE is a temporary addition while we're testing
+The environment variable ALLOW_RESET=TRUE is a temporary addition while we're testing and allows us to reset the whole DB.
 
 Run our app
 ```
