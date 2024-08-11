@@ -1,4 +1,6 @@
-// import { ChromaClient } from 'chromadb'
+import { NextResponse } from 'next/server';
+// const { ChromaClient } = require("chromadb");
+// console.log("hello from database")
 // const client = new ChromaClient();
 
 // const collection = await client.createCollection({
@@ -19,4 +21,10 @@
 // });
 
 // console.log(results)
+
+export async function GET(req){
+    return NextResponse.json(
+        {message: "Hello from the database!"}
+    )
+}
 
