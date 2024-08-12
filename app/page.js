@@ -4,7 +4,7 @@ import {useState, useEffect, useRef} from "react"
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    {role: 'assistant' , content : `Hi! I'm the Headstarter support assistant. How can I help you today?`}
+    {role: 'assistant' , content : `Hi! I'm Berea Beacon, here to help you join our campus. How can I help you today?`}
   ])
 
   const [message, setMessage] = useState("")
